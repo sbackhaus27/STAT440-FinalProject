@@ -1,0 +1,75 @@
+---
+title: "STAT 440/540 Final Project Report"
+author: "Group 01"
+date: "2025-12-04"
+format:
+  pdf:
+    toc: true
+    number-sections: true
+    geometry: margin=1in
+execute:
+  echo: true
+  warning: false
+  message: false
+bibliography: references.bib
+editor: visual
+---
+
+# Introduction
+
+-   Question, context, why it matters
+-   Dataset description, units, data dictionary (link or appendix)
+
+## Methods
+
+-   Data cleaning and preprocessing decisions (justify)
+-   Modeling strategy
+-   Assumptions for OLS and how you assessed them
+
+## Results
+
+-   Final model specification and fitted equation
+
+```{r}
+#| label: fit-final
+# example refit; replace with your chosen model
+# m_final <- lm(y ~ x1 + x2 + x3, data = dat)
+```
+
+```{r}
+#| label:tbl-final
+#| tbl-cap: "Final model coefficients with 95% CIs."
+# broom::tidy(m_final, conf.int = TRUE) |>
+#   knitr::kable(digits = 3)
+```
+
+## Diagnostics and Robustness
+
+-   Residual plots, influence, multicollinearity (VIF), nonlinearity checks
+-   Sensitivity (alternative functional forms, outlier handling, train/test split)
+
+```{r}
+#| label:fig-final-diags
+#| fig-cap: "Diagnostics for the final model."
+# performance::check_model(m_final)
+```
+
+## Discussion
+
+-   Substantive takeaways; limitations; external validity
+-   Ethical considerations and fairness (if relevant)
+
+## Conclusion
+
+-   What you learned; what you would do next with more time/data
+
+## Reproducibility
+
+```{r}
+#| label: session-info
+sessionInfo()
+```
+
+## Appendices
+
+-   Extended tables/figures, data dictionary, additional models

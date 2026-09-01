@@ -1,0 +1,11 @@
+project:
+  type: default
+  output-dir: outputs
+
+format:
+  pdf:
+    toc: true
+    number-sections: true
+    geometry: margin=1in
+
+metadata-files: []

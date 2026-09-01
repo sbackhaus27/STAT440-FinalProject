@@ -1,0 +1,97 @@
+---
+title: "STAT 440/540 Milestone 2: EDA & Initial Models"
+author: "Group XX"
+date: "2025-09-25"
+format:
+  pdf:
+    toc: true
+    number-sections: true
+    geometry: margin=1in
+execute:
+  echo: true
+  warning: false
+  message: false
+editor: visual
+---
+
+# Overview
+- Briefly restate question, dataset, and key variables.
+
+## Package Setup
+
+```{r}
+#| label: pkg-setup
+if (!requireNamespace("pacman", quietly = TRUE)) install.packages("pacman")
+pacman::p_load(tidyverse, janitor, skimr, GGally, broom, patchwork, knitr, kableExtra)
+set.seed(440540)
+```
+
+## Data Import and Cleaning
+
+```{r}
+#| label: data-import
+raw <- readr::read_csv("../data/raw/example_stub.csv") |> janitor::clean_names()
+
+dat <- raw |>
+  mutate(
+    x3 = factor(x3)
+  ) |>
+  tidyr::drop_na(y)
+```
+
+## Descriptive Statistics
+
+```{r}
+#| label:tbl-summary
+#| tbl-cap: "Summary statistics for numeric variables."
+dat |>
+  dplyr::select(where(is.numeric)) |>
+  skimr::skim() |>
+  knitr::kable()
+```
+
+## Exploratory Visualizations
+
+```{r}
+#| label:fig-pairs
+#| fig-cap: "Pairs plot for numeric variables."
+GGally::ggpairs(dplyr::select(dat, where(is.numeric)))
+```
+
+```{r}
+#| label:fig-y-vs-x
+#| fig-cap: "Outcome vs. selected predictors with loess smooth."
+dat |>
+  tidyr::pivot_longer(cols = -c(y), names_to = "var", values_to = "val") |>
+  ggplot(aes(val, y)) +
+  geom_point(alpha = 0.5) +
+  geom_smooth(method = "loess", se = TRUE) +
+  facet_wrap(~ var, scales = "free_x")
+```
+
+## Initial Simple Regressions
+
+```{r}
+#| label: simple-models
+cand_x <- c("x1","x2","x3")
+fits <- lapply(cand_x, \(v) lm(reformulate(v, response = "y"), data = dat))
+models <- tibble::tibble(
+  predictor = cand_x,
+  glance = purrr::map(fits, broom::glance),
+  tidy = purrr::map(fits, broom::tidy)
+)
+
+dplyr::bind_rows(purrr::map2(models$predictor, models$glance, \(v,g) dplyr::mutate(g, predictor=v))) |>
+  dplyr::select(predictor, r.squared, adj.r.squared, AIC, BIC, p.value) |>
+  knitr::kable(digits = 3, caption = "Simple regression comparisons")
+```
+
+## Early Findings and Next Steps
+- What looks promising? Any evidence of nonlinearity or interactions to explore?
+
+## Reproducibility Snapshot
+
+```{r}
+#| label: session-info
+sessionInfo()
+```

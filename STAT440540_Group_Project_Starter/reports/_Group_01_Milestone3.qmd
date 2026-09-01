@@ -1,0 +1,103 @@
+---
+title: "STAT 440/540 Milestone 3: Multiple Regression & Refinement"
+author: "Group 01"
+date: "2025-10-30"
+format:
+  pdf:
+    toc: true
+    number-sections: true
+    geometry: margin=1in
+execute:
+  echo: true
+  warning: false
+  message: false
+editor: visual
+---
+
+# Introduction
+
+-   Recap of EDA and initial insights guiding model building.
+
+## Package Setup
+
+```{r}
+#| label: pkg-setup
+if (!requireNamespace("pacman", quietly = TRUE)) install.packages("pacman")
+pacman::p_load(tidyverse, broom, car, performance, interactions, splines, mgcv,
+               kableExtra, ggplot2, patchwork)
+set.seed(440540)
+```
+
+## Load Data
+
+```{r}
+#| label: load-data
+dat <- readr::read_csv("../data/processed/dat_clean.csv")
+```
+
+## Candidate Models
+
+We consider linear, interaction, polynomial, and spline specifications.
+
+```{r}
+#| label: fit-candidates
+m_lin   <- lm(y ~ x1 + x2 + x3, data = dat)
+m_int   <- lm(y ~ x1*x2 + x3, data = dat)
+m_poly  <- lm(y ~ poly(x1,2) + x2 + x3, data = dat)
+m_spline<- lm(y ~ splines::bs(x1, df=4) + x2 + x3, data = dat)
+```
+
+## Model Summaries
+
+```{r}
+#| label:tbl-candidates
+#| tbl-cap: "Model fit summaries."
+purrr::map_df(
+  list(lin=m_lin, int=m_int, poly=m_poly, spline=m_spline),
+  ~broom::glance(.x), .id="model"
+) |>
+  dplyr::select(model, r.squared, adj.r.squared, AIC, BIC, sigma) |>
+  knitr::kable(digits=3)
+```
+
+## Coefficient Interpretation
+
+```{r}
+#| label:tbl-coefs
+#| tbl-cap: "Coefficient estimates for interaction model."
+broom::tidy(m_int, conf.int = TRUE) |>
+  knitr::kable(digits=3)
+```
+
+## Diagnostics
+
+```{r}
+#| label:fig-diags
+#| fig-cap: "Residual diagnostics for interaction model."
+performance::check_model(m_int)
+```
+
+```{r}
+#| label: vif
+car::vif(m_int)
+```
+
+## Interaction Plot
+
+```{r}
+#| label:fig-interactions
+#| fig-cap: "Interaction effect visualization."
+interactions::interact_plot(m_int, pred = x1, modx = x2, centered = "all")
+```
+
+## Model Selection Rationale
+
+-   Compare metrics and diagnostics; justify the preferred model.
+-   Note limitations and trade-offs (bias–variance, interpretability).
+
+## Reproducibility Snapshot
+
+```{r}
+#| label: session-info
+sessionInfo()
+```

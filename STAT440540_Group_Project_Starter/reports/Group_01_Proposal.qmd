@@ -1,0 +1,146 @@
+---
+title: "STAT 440/540 Project Proposal"
+author: "Group 01: Jaden McKelvey-Francis, Joshua Ngo, Svetlana Backhaus"
+date: "2025-09-04"
+format:
+  pdf:
+    toc: true
+    number-sections: false
+    geometry: margin=1in
+execute:
+  echo: true
+  warning: false
+  message: false
+editor: visual
+---
+
+# Project Proposal
+
+## Group and Communication Plan
+
+-   Members and emails:
+    -   Jaden McKelvey-Francis: jfrancis99\@unm.edu
+    -   Joshua Ngo: jngo27\@unm.ed
+    -   Svetlana Backhaus: sbackhaus\@unm.edu
+-   Collaboration tools (e.g., GitHub, Google Drive) and cadence:
+    - Shared project deadlines are posted in the group Canvas calendar
+    - Working versions of project milestones and cleaned datasets are uploaded to the Canvas group "Files" page
+-   Roles:
+    -   Jaden: presentation development, model interpretation
+    -   Joshua:
+    -   Svetlana: 
+
+## Research Question
+
+- The primary research question for this project is: **Which WNBA box score or advanced statistics are economically undervalued?**
+
+    - We do this by comparing estimated standardized regression coefficients for predicting VORP and predicting Salary.
+    
+- There are two target outcomes. The first, $\textrm{Y}_1$, is value over replacement player, or an estimate of the number of points per 100 team possessions a player scores over a replacement player over a full professional basketball season. WNBA games empirically have 100 possessions a game, on average, and a replacement player costs a team approximately 2 points a game, on average. The second, $\textrm{Y}_2$, is player salary for the 2025 season.
+
+- WNBA teams have limited salary caps, so choosing effective players who result in as many wins as possible per season is of utmost importance. Salary caps in the WNBA increased for the 2026 season, and may continue to increase in the future as the popularity of the sport increases. GMs and coaches want to use this increased salary cap space on players who are effective and contribute to wins. 
+
+## Dataset Summary
+
+-   Data for this project are sourced from the following sites:
+    1. <https://www.basketball-reference.com/wnba/years/2025_advanced.html> to calculate BPM and VORP
+    2. <https://www.spotrac.com/wnba/rankings/player/_/year/2025/sort/cash_total> for 2025 player salaries and number of years in the league.
+    
+-   Observations (n) and variables (p)
+    - There are 182 observations, each representing a unique player-team combination.
+    - There are 10 variables used in the regression model, and 2 response variables
+-   Candidate predictors (X) are as follows:
+    - `3P%`: percentage of 3 point field goal attempts a player makes; quantitative
+    - `TS%`: true shooting percentage; defined as $\frac{\textrm{Points}}{2\times(\textrm{Field Goal Attempts} + 0.44\times\textrm{Free Throw Attempts})}$ quantitative
+    - `USG%`: usage percentage; defined as $100\times\frac{(\textrm{FGA}+0.44\times\textrm{FTA} + \textrm{TOV}\times(\textrm{Team MP}/5)}{\textrm{MP}\times(\textrm{Team FGA} + 0.44\times\textrm{Team FTA} + \textrm{Team TOV})}$; quantitative
+    - `TRB`: average rebounds per game; quantitative
+    - `AST`: average assists per game; quantitative
+    - `STL`: average steals per game; quantitative
+    - `BLK`: average blocks per game; quantitative
+    - `TOV`: average turnovers per game; quantitative
+    - `PTS`: average points per game; quantitative
+    - `Seas_Plyd`: seasons played; quantitative
+    - `Plyd_2024`: dichotomous variable with 1 if player was on team roster in 2024, and 0 if not on the roster; categorical
+    
+-   Licensing/usage constraints
+
+## Data Dictionary (Concise)
+
+| Variable | Type | Description | Units | Expected role|
+|-----------|-------|--------------|--------|-----------------------|
+|`Salary` | Continuous | Dollar amount paid to a WNBA player during the season | $ | Y |
+| `VORP` | Continuous | Estimate of a player's overall contribution in points compared to a replacement-level player | Points | Y|
+| `3P%` | Continuous | Percent of 3-point field goal attempts made | `NA` | X |
+|`TS%` | Continuous | Measure of a player's overall scoring efficiency; accounts for 2/3-pointers and free throws | `NA` | X |
+| `USG%` | Continuous | Estimate of the team plays a player finishes with a shot attempt, free throw trip, or turnover while on the court | `NA` | X|
+| `TRB` | Continuous | Average rebounds per game | Rebounds | X |
+| `AST` | Continuous | Average assists per game | Assists | X |
+| `STL` | Continuous | Average steals per game | Steals | X |
+| `BLK` | Continuous | Average blocks per game | Blocks | X |
+| `TOV` | Continuous | Average turnovers per game | Turnovers | X |
+| `PTS` | Continuous | Average points per game | Points | X |
+| `Seas_Plyd` | Discrete | Number of seasons played in player career | Count | X |
+| `Plyd_2024` | Dichotomous, Nominal | 1 if player was on roster in 2024 season, 0 if not on roster in 2024 season | `NA`|  X |
+
+
+: Data Dictionary  {tbl-colwidths="[15, 20, 60, 15, 12]"}
+
+## Suitability for Regression
+
+-   Linearity/plausibility, expected signal, anticipated interactions
+
+    -   **Multicollinearity**: We anticipate that several of the candidate predictors will be correlated with each other. Although this does not affect prediction, multicollinearity does affect inference, inflating p-values and widening confidence intervals.
+-   Potential data issues (missingness, outliers, measurement error)
+
+-   Some player statistics are missing since players do not always participate in every action they could take (e.g., have any 3 point field goals or turnovers); this is generally due to a player being on the court for only a few minutes. Keeping these players in the dataset is important since players with low minutes played are also typically poorer players, impacting their salary and VORP. These player statistics are imputed (e.g., `3P%` for a player with 0 3-pointers attempted will be 0, not `NA`).
+-   We also suspect that the `Salary` response variable will be right-skewed, which violates the normality assumption for linear models. As we work through EDA, we will try several transforms of this variable, and other we do not currently suspect, to make it more normally distributed.
+-   Estimating BPM using a model trained on NBA data and adjusted for WNBA game characteristics will not result in the true BPM, as intended, for the WNBA. However, the model developed by nbacouchside has a $R^2$ coefficient of 0.84 when regressed on BPM scores calculated by basketball-reference.
+
+## Risks and Mitigations
+
+1. Data access:
+
+    - VORP is not freely available for the WNBA like it is for the NBA. We use the BPM estimation methods from <https://www.nbacouchside.net/2022/09/12/introducing-wbna-bpm/> and calculate VORP using methods for the NBA.
+    - Sometimes, players are traded in the middle of the season, so their salaries and staistics are split across the teams. We use their total statistics instead of their per-team statistics, which are a simple average of their performance with each team. 
+  
+2. Cleaning complexity:
+
+    - Most of the data collected from `basketball-reference` is already cleaned and, in some cases, averaged over games played; the same goes for the salary data from `spotrac`. Thus, cleaning complexity is low, and most of the data preparation stage is used for calculating BPM and VORP. 
+  
+3. Time constraints:
+
+    - Some of this data had to be collected by hand since it is not freely available in an easy-to-download dataset. Data scraping scripts could be written, but this would also be time consuming and take time away from analysis.
+
+4. Mitigation:
+
+    - Rather than using several years of WNBA regular season data, we only examine the 2025 season, reducing the amount of data that needed to be collected manually.
+    - Rather than recreating NBA models using several years worth of WNBA data, we assume that the NBA models for BPM and VORP hold for the WNBA.
+
+## Ethical Use and Reproducibility
+
+-   Privacy, bias, fairness considerations
+-   Plan for reproducible workflows (versioning, seeds, session info)
+
+## Planned Analytic Path
+
+1.   EDA → simple regression on VORP → diagnostics → candidate multiple models →  diagnostics 
+2.   EDA → simple regression on player salary → diagnostics → candidate multiple models → diagnostics 
+3.   Comparison of standardized regression coefficients for the VORP and player salary models
+
+
+## Package Setup
+
+```{r}
+#| label: pkg-setup
+#| include: true
+if (!requireNamespace("pacman", quietly = TRUE)) install.packages("pacman")
+pacman::p_load(tidyverse, janitor, broom, knitr, kableExtra, ggplot2)
+set.seed(440540)
+```
+
+## Reproducibility Snapshot
+
+```{r}
+#| label: session-info
+sessionInfo()
+```

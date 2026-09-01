@@ -1,0 +1,137 @@
+---
+title: "STAT 440/540 Final Project — Group 01"
+author: "Jaden McKelvey-Francis · Joshua Ngo · Svetlana Backhaus"
+format:
+  revealjs:
+    slide-number: true
+    toc: false
+    incremental: true
+    code-fold: false
+    theme: simple
+execute:
+  echo: true
+  warning: false
+  message: false
+---
+
+## Question and Motivation
+- One slide: problem statement, why it matters
+
+## Data in One Slide
+- n, p, key variables, data source, any quirks
+
+## Approach
+- Modeling strategy (bulleted pipeline)
+
+## Results
+- Key table/figure (single most persuasive visual)
+    - add 95% confidence intervals for the standardized regression coefficients
+
+```{r}
+#| echo: false
+#| label: fig-key
+#| fig-showtext: true
+#| fig.width: 12
+#| fig.height: 6
+#| out.width: "100%"
+
+library(tidyverse)
+library(showtext)
+
+font_add_google("League Gothic", "League Gothic")
+font_add_google("Source Sans 3", "source_sans")
+showtext_auto()
+
+# 1. Base dataset
+dat <- data.frame(
+  stat = factor(
+    c("3P%", "TS%", "USG%", "TRB", "AST", "BLK", "TOV", "PTS"),
+    levels = rev(c("3P%", "TS%", "USG%", "TRB", "AST", "BLK", "TOV", "PTS"))
+  ),
+  Salary = sample(-1:1, 8, replace = TRUE),
+  VORP   = sample(-1:1, 8, replace = TRUE)
+)
+
+# 2. Reshape to long format for automatic color aesthetic mapping
+dat_long <- dat %>% 
+  pivot_longer(cols = c(Salary, VORP), names_to = "Metric", values_to = "Coefficient")
+
+# Custom colors matching your palette
+metric_colors <- c("Salary" = "#00bfa5", "VORP" = "#c62828")
+
+# 3. Plot with native dot legend under title
+ggplot() +
+  # Connecting gray segment (uses wide dataset)
+  geom_segment(
+    data = dat,
+    aes(x = Salary, xend = VORP, y = stat, yend = stat),
+    color = "#e0e0e0", linewidth = 2, lineend = "round"
+  ) +
+  # Points mapped to 'Metric' for automatic legend generation
+  geom_point(
+    data = dat_long,
+    aes(x = Coefficient, y = stat, color = Metric),
+    size = 3.5
+  ) +
+  # Text labels for Salary
+  geom_text(
+    data = dat,
+    aes(x = Salary, y = stat, label = sprintf("%.2f", Salary)),
+    color = metric_colors["Salary"],
+    hjust = ifelse(dat$Salary < dat$VORP, 1.4, -0.4),
+    size = 3.8, family = "source_sans", fontface = "bold"
+  ) +
+  # Text labels for VORP
+  geom_text(
+    data = dat,
+    aes(x = VORP, y = stat, label = sprintf("%.2f", VORP)),
+    color = metric_colors["VORP"],
+    size = 3.8, family = "source_sans", fontface = "bold"
+  ) +
+  # Custom manual color scale
+  scale_color_manual(values = metric_colors) +
+  scale_x_continuous(breaks = seq(-1, 1, by = 0.2)) +
+  coord_cartesian(clip = "off") +
+  # Standardize legend aesthetic key size (dot glyphs)
+  guides(color = guide_legend(override.aes = list(size = 4))) +
+  labs(
+    title = "Standardized Regression Coefficients for Box Score on Salary and VORP",
+    subtitle = "When VORP is greater than salary, the player statistic is relatively undervalued in the market.\nWhen VORP is less than salary, the player statistic is relatively overvalued in the market.",
+    x = NULL, y = NULL, color = NULL
+  ) +
+  theme_minimal() +
+  theme(
+    plot.margin = margin(t = 10, r = 10, b = 10, l = 10),
+    plot.title = element_text(
+      family = "League Gothic", face = "bold", size = 28, margin = margin(b = 4)
+    ),
+    plot.subtitle = element_text(
+      family = "source_sans", color = "#333333", size = 13, margin = margin(b = 10), lineheight = 0.95
+    ),
+    # Legend position and layout under the title/subtitle
+    legend.position = "top",
+    legend.justification = "left",
+    legend.text = element_text(family = "source_sans", face = "bold", size = 12, color = "#333333"),
+    legend.margin = margin(t = 0, b = 15),
+    panel.grid.major.x = element_line(color = "#e5e5e5", linetype = "dotted"),
+    panel.grid.minor = element_blank(),
+    panel.grid.major.y = element_blank(),
+    axis.text.y = element_text(family = "source_sans", face = "bold", color = "#333333"),
+    axis.text.x = element_text(family = "source_sans", color = "#777777")
+  )
+```
+
+## Diagnostics (Brief)
+- 1–2 bullets or a small multi-panel figure
+
+## Takeaways
+- What you found, practical implication, limitation
+
+## Team Contributions
+- Who did what (one line each)
+- Jaden:
+- Joshua:
+-Svetlana: 
+
+## Q&A
+- Backup slides: extra figs/tables
